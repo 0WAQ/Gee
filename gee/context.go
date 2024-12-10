@@ -19,6 +19,7 @@ type Context struct {
 	// request info
 	Path   string
 	Method string
+	Params map[string]string // 将解析后的参数存到这里
 
 	// response info
 	StatusCode int // 记录当前响应的状态码
@@ -32,6 +33,14 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Path:   req.URL.Path,
 		Method: req.Method,
 	}
+}
+
+func (c *Context) Param(key string) string {
+	value, ok := c.Params[key]
+	if !ok {
+		return ""
+	}
+	return value
 }
 
 // 获取POST请求中表单数据的值
@@ -69,7 +78,7 @@ func (c *Context) String(code int, format string, values ...interface{}) {
 func (c *Context) JSON(code int, obj interface{}) {
 
 	// 设置响应头为 Content-Type: text/plain
-	c.SetHeader("Content-Type", "text/plain")
+	c.SetHeader("Content-Type", "application/json")
 	c.Status(code)
 
 	// 创建编码器
@@ -91,7 +100,7 @@ func (c *Context) Data(code int, data []byte) {
 func (c *Context) HTML(code int, html string) {
 
 	// 设置响应头为 Content-Type: text/plain
-	c.SetHeader("Content-type", "text/plain")
+	c.SetHeader("Content-type", "text/html")
 	c.Status(code)
 
 	c.Writer.Write([]byte(html))
